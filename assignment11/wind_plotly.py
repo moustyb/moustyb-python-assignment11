@@ -1,37 +1,30 @@
 import plotly.express as px
-import pandas as pd
+import plotly.data as pldata
 
-print("🚀 Starting Task 3: Plotly Wind Scatter Plot...")
+# Load the wind dataset
+df = pldata.wind(return_type='pandas')
 
-# 1. Load the built-in wind dataset
-df = px.data.wind()
-print(f"✅ Successfully loaded wind dataset with {len(df)} rows")
+# 1. Print first and last 10 lines to verify data load
+print("First 10 lines:")
+print(df.head(10))
+print("\nLast 10 lines:")
+print(df.tail(10))
 
-# 2. Clean the data
-# Map text ranges to numbers for the 'size' property
-strength_map = {'0-1': 1, '2-3': 3, '4-5': 5, '6-7': 7, '8-9': 9}
-df['strength_num'] = df['strength'].map(strength_map)
+# 2. Clean the data: convert 'strength' column to float
+# Remove any non-numeric characters and convert to float
+df['strength'] = df['strength'].str.replace(r'[^\d.]', '', regex=True).astype(float)
 
-# IMPORTANT: Drop any rows where the conversion failed (NaN values)
-df = df.dropna(subset=['strength_num'])
-print(f"✅ Cleaned data: {len(df)} rows remaining after removing invalid data")
-
-# 3. Create the scatter plot
-# We use 'strength_num' for size (must be numbers) and 'strength' for color
+# 3 & 4. Create scatter plot with correct axes and colors
+# x-axis = strength, y-axis = frequency, color = direction
 fig = px.scatter(
-    df, 
-    x="direction", 
-    y="frequency", 
-    color="strength", 
-    size="strength_num",
-    title="Wind Direction and Frequency"
+    df,
+    x='strength',
+    y='frequency',
+    color='direction',
+    title="Wind Strength vs Frequency by Direction",
+    labels={'strength': 'Wind Strength', 'frequency': 'Frequency', 'direction': 'Wind Direction'}
 )
 
-# 4. Save the plot as an HTML file
-try:
-    fig.write_html("wind.html")
-    print("✅ Successfully saved interactive chart to 'wind.html'")
-except Exception as e:
-    print(f"❌ FAILED to save chart: {e}")
-
-print("✅ Task 3 completed successfully!")
+# Save the interactive plot to an HTML file
+fig.write_html("wind.html", auto_open=True)
+print("\nInteractive chart saved to wind.html")
